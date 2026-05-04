@@ -370,7 +370,7 @@ export const QUESTIONS: Question[] = [
     id: 29,
     axis: "TH",
     category: "기술 친화",
-    text: "스마트 크루즈(SCC) 기능 사용 빈도는?",
+    text: "스마트 크루즈 컨트롤(SCC) 기능 사용 빈도는?",
     options: [
       { text: "거의 항상 켜둔다", score: -2 },
       { text: "고속도로 등에서 자주 사용", score: -1 },
