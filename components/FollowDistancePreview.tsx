@@ -215,8 +215,6 @@ export default function FollowDistancePreview({
           {/* 정지선 + 횡단보도 (yellow 전용) */}
           {kind === "yellow-light-approach" && <Crosswalk />}
 
-          {/* 측면 보조 차량 (yellow 전용 — Q1/Q2는 주변차 제거) */}
-          {kind === "yellow-light-approach" && <YellowSideCars />}
 
           {/* 메인 앞차 */}
           <g
@@ -443,13 +441,8 @@ function UrbanIntersectionBackdrop() {
       <rect x="115" y="115" width="525" height="5" fill="#6a6a6a" />
       <rect x="115" y="113" width="525" height="2" fill="#8a8a8a" opacity="0.7" />
 
-      {/* 신호등 4개 — 모두 황색 점등 */}
-      <g>
-        <SignalHead x={185} y={120} />
-        <SignalHead x={325} y={120} />
-        <SignalHead x={470} y={120} />
-        <SignalHead x={580} y={120} />
-      </g>
+      {/* 신호등 1개 — 황색 점등 (도로 중앙) */}
+      <SignalHead x={400} y={120} />
 
       {/* 표지판: U-턴 (좌측) */}
       <g transform="translate(165, 180)">
@@ -585,71 +578,6 @@ function Crosswalk() {
           return <g key={`cw-row-${i}`}>{stripes}</g>;
         })}
       </g>
-    </g>
-  );
-}
-
-/* ───────────────────── 측면 보조 차량 (yellow 전용) ───────────────────── */
-
-function YellowSideCars() {
-  // 교차로 황색 신호 — 횡단보도 너머 멀리 차 한 대 정도, 좌측 차로에 옆 차
-  return (
-    <g>
-      {/* 옆 차로 — 같이 정지하려는 차 */}
-      <MiniCar cx={145} cy={355} scale={0.78} color="#8a929a" plate />
-      <MiniCar cx={655} cy={355} scale={0.65} color="#3a3f48" />
-    </g>
-  );
-}
-
-/** 작은 차 (뒷모습 단순화) */
-function MiniCar({
-  cx,
-  cy,
-  scale = 1,
-  color = "#4a5160",
-  plate = false,
-}: {
-  cx: number;
-  cy: number;
-  scale?: number;
-  color?: string;
-  plate?: boolean;
-}) {
-  return (
-    <g transform={`translate(${cx}, ${cy}) scale(${scale})`}>
-      <ellipse cx="0" cy="40" rx="55" ry="5" fill="black" opacity="0.4" />
-      {/* 차체 */}
-      <path
-        d="M -45 25 Q -45 -10, -25 -18 L 25 -18 Q 45 -10, 45 25 L 45 38 Q 45 44, 38 44 L -38 44 Q -45 44, -45 38 Z"
-        fill={color}
-      />
-      {/* 루프 + 뒷유리 */}
-      <path
-        d="M -28 -15 Q -22 -32, -8 -36 L 8 -36 Q 22 -32, 28 -15 Z"
-        fill="#1a2330"
-      />
-      <path
-        d="M -22 -16 Q -17 -27, -6 -30 L 6 -30 Q 17 -27, 22 -16 Z"
-        fill="#3d6480"
-        opacity="0.85"
-      />
-      {/* 후미등 */}
-      <rect x="-40" y="3" width="20" height="5" rx="1.5" fill="#ff3b3b" />
-      <rect x="20" y="3" width="20" height="5" rx="1.5" fill="#ff3b3b" />
-      {/* 번호판 */}
-      {plate && (
-        <rect
-          x="-14"
-          y="22"
-          width="28"
-          height="10"
-          rx="1.5"
-          fill="#f3efe0"
-          stroke="#444"
-          strokeWidth="0.5"
-        />
-      )}
     </g>
   );
 }
