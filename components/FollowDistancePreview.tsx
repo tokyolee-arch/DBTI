@@ -215,9 +215,7 @@ export default function FollowDistancePreview({
           {/* 정지선 + 횡단보도 (yellow 전용) */}
           {kind === "yellow-light-approach" && <Crosswalk />}
 
-          {/* 측면·전방 보조 차량 (혼잡 도심 분위기) */}
-          {kind === "follow-distance-stop" && <StopSideCars />}
-          {kind === "follow-distance-city" && <CitySideCars />}
+          {/* 측면 보조 차량 (yellow 전용 — Q1/Q2는 주변차 제거) */}
           {kind === "yellow-light-approach" && <YellowSideCars />}
 
           {/* 메인 앞차 */}
@@ -363,15 +361,6 @@ function BusyCityBackdrop({ kind }: { kind: InteractiveKind }) {
         <rect x="561" y="167" width="20" height="3" />
       </g>
 
-      {/* 시내일 때 추가 원경 차 흐름 */}
-      {kind === "follow-distance-city" && (
-        <g opacity="0.85">
-          {/* 멀리 있는 차들 — 본인 차로 앞쪽 */}
-          <MiniCar cx={400} cy={278} scale={0.18} color="#e3e6ea" />
-          <MiniCar cx={385} cy={272} scale={0.13} color="#5c6266" />
-          <MiniCar cx={415} cy={272} scale={0.12} color="#6f4030" />
-        </g>
-      )}
     </g>
   );
 }
@@ -600,43 +589,7 @@ function Crosswalk() {
   );
 }
 
-/* ───────────────────── 측면 보조 차량 ───────────────────── */
-
-function StopSideCars() {
-  // 정지 상태 — 좌·우 차로에 멈춰있는 차들
-  return (
-    <g>
-      {/* 좌측 차로 (가까이) */}
-      <MiniCar cx={150} cy={360} scale={0.9} color="#a3acb3" plate />
-      {/* 우측 차로 (가까이) */}
-      <MiniCar cx={650} cy={360} scale={0.9} color="#7a3838" plate />
-      {/* 좌측 더 멀리 */}
-      <MiniCar cx={205} cy={300} scale={0.45} color="#3a4248" />
-      {/* 우측 더 멀리 */}
-      <MiniCar cx={595} cy={300} scale={0.45} color="#d6dadd" />
-      {/* 더 원경 */}
-      <MiniCar cx={360} cy={273} scale={0.18} color="#5b6066" />
-      <MiniCar cx={440} cy={273} scale={0.18} color="#a8aeb3" />
-    </g>
-  );
-}
-
-function CitySideCars() {
-  // 시내 주행 — 좌우 차로 차들이 옆에서 같이 가는 분위기
-  return (
-    <g>
-      <MiniCar cx={130} cy={355} scale={0.85} color="#5b6671" plate />
-      <MiniCar cx={670} cy={355} scale={0.85} color="#9aa3aa" plate />
-      <MiniCar cx={195} cy={295} scale={0.4} color="#3a4248" />
-      <MiniCar cx={605} cy={295} scale={0.4} color="#7a3838" />
-      {/* 마주 오는 차로 (반대편) — 더 멀리 */}
-      <g opacity="0.85">
-        <MiniCar cx={310} cy={272} scale={0.16} color="#cfd2d6" />
-        <MiniCar cx={500} cy={272} scale={0.16} color="#3f4750" />
-      </g>
-    </g>
-  );
-}
+/* ───────────────────── 측면 보조 차량 (yellow 전용) ───────────────────── */
 
 function YellowSideCars() {
   // 교차로 황색 신호 — 횡단보도 너머 멀리 차 한 대 정도, 좌측 차로에 옆 차
