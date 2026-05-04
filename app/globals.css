@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  background-color: #fff8ee;
+  color: #2d3142;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-gowun-dodum), system-ui, -apple-system, "Segoe UI",
+    Roboto, sans-serif;
+}
+
+/* 부드러운 스크롤 */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 포커스 링 — 접근성 */
+:focus-visible {
+  outline: 2px solid #ff7a45;
+  outline-offset: 2px;
+}
+
+/* 이모지 일관 렌더링 */
+.emoji {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji",
+    sans-serif;
+}
