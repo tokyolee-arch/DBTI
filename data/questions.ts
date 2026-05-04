@@ -370,7 +370,7 @@ export const QUESTIONS: Question[] = [
     id: 29,
     axis: "TH",
     category: "기술 친화",
-    text: "스마트 크루즈 컨트롤(ACC) 기능 사용 빈도는?",
+    text: "스마트 크루즈(SCC) 기능 사용 빈도는?",
     options: [
       { text: "거의 항상 켜둔다", score: -2 },
       { text: "고속도로 등에서 자주 사용", score: -1 },
@@ -442,12 +442,12 @@ export const QUESTIONS: Question[] = [
     id: 35,
     axis: "TH",
     category: "기술 친화",
-    text: "새 차 구매 시 본인의 우선순위는?",
+    text: "신차 구입시 가장 우선시 하는 옵션사항은?",
     options: [
-      { text: "자율주행·ADAS 옵션", score: -2 },
-      { text: "인포테인먼트·편의장치", score: -1 },
-      { text: "주행성능·반응성", score: 1 },
-      { text: "내부 공간 활용도", score: 2 },
+      { text: "ADAS 등 안전 솔루션", score: -2 },
+      { text: "음향 등 인포시스템", score: -1 },
+      { text: "시트 사양", score: 1 },
+      { text: "디지털키, 카메라 등 편의사양", score: 2 },
     ],
   },
 ];

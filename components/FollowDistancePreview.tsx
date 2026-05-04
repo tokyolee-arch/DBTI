@@ -6,14 +6,14 @@ import type { InteractiveKind } from "@/types";
  * 운전석 시점 인터랙티브 프리뷰
  *
  * kind:
- *  - "follow-distance-stop"   Q1: 정지 시 차간 거리, 4단계 스케일 변화
+ *  - "follow-distance-stop"   Q1: 정지 시 차간 거리, 4단계 스케일 변화 (도심 정체 분위기)
  *  - "follow-distance-city"   Q2: 시내 주행 차간 거리, 4단계 스케일 변화
- *  - "yellow-light-approach"  Q11: 황색 신호 정지선 10m 접근, 고정 장면 + 신호등
+ *  - "yellow-light-approach"  Q10: 황색 신호 정지선 10m 접근 — 도심 교차로 고정 장면
  */
 
 interface FollowDistancePreviewProps {
-  selected: number | null; // -2 | -1 | 1 | 2 | null
-  kind?: InteractiveKind; // 기본 stop
+  selected: number | null;
+  kind?: InteractiveKind;
 }
 
 interface DistanceConfig {
@@ -34,7 +34,6 @@ const PLACEHOLDER: DistanceConfig = {
   sub: "버튼을 누르면 앞차와의 거리가 그림으로 바뀝니다",
 };
 
-// Q1 정지 상태
 const STOP_CFG: Record<number, DistanceConfig> = {
   [-2]: {
     scale: 2.1,
@@ -70,7 +69,6 @@ const STOP_CFG: Record<number, DistanceConfig> = {
   },
 };
 
-// Q2 시내 주행
 const CITY_CFG: Record<number, DistanceConfig> = {
   [-2]: {
     scale: 1.55,
@@ -106,10 +104,9 @@ const CITY_CFG: Record<number, DistanceConfig> = {
   },
 };
 
-// Q11 황색 신호 (고정 장면 — 옵션과 무관)
 const YELLOW_FIXED: DistanceConfig = {
-  scale: 0.95,
-  translateY: -20,
+  scale: 0.55,
+  translateY: -55,
   showPlate: true,
   showWheels: true,
   label: "황색 신호 — 정지선까지 약 10m",
@@ -121,34 +118,26 @@ interface SceneStyle {
   skyBottom: string;
   hudPrimary: string;
   hudSecondary: string;
-  showSignal: boolean;
-  showStopLine: boolean;
 }
 
 const SCENE: Record<InteractiveKind, SceneStyle> = {
   "follow-distance-stop": {
-    skyTop: "#FFB27A",
-    skyBottom: "#FFE9C9",
+    skyTop: "#A8C8E8",
+    skyBottom: "#E8F0F8",
     hudPrimary: "STOP · 0 km/h",
-    hudSecondary: "신호 대기",
-    showSignal: false,
-    showStopLine: false,
+    hudSecondary: "신호 대기 · 도심 정체",
   },
   "follow-distance-city": {
     skyTop: "#7FB6E8",
     skyBottom: "#D9E9F5",
     hudPrimary: "50 km/h",
     hudSecondary: "시내 주행",
-    showSignal: false,
-    showStopLine: false,
   },
   "yellow-light-approach": {
-    skyTop: "#F2A24A",
-    skyBottom: "#FFE0B0",
+    skyTop: "#A6D2EF",
+    skyBottom: "#E8F4FB",
     hudPrimary: "60 km/h",
     hudSecondary: "황색 신호 · 정지선 10m",
-    showSignal: true,
-    showStopLine: true,
   },
 };
 
@@ -209,80 +198,29 @@ export default function FollowDistancePreview({
           {/* 하늘 */}
           <rect x="0" y="0" width="800" height="260" fill={`url(#sky-${kind})`} />
 
-          {/* 원경 건물 */}
-          <g opacity="0.35" fill="#5b4a3a">
-            <rect x="40" y="180" width="80" height="80" />
-            <rect x="130" y="155" width="55" height="105" />
-            <rect x="195" y="200" width="40" height="60" />
-            <rect x="560" y="170" width="70" height="90" />
-            <rect x="640" y="190" width="55" height="70" />
-            <rect x="700" y="160" width="60" height="100" />
-          </g>
-
-          {/* 가로수 */}
-          <g opacity="0.55">
-            <circle cx="260" cy="225" r="20" fill="#3f6a4a" />
-            <rect x="257" y="235" width="6" height="28" fill="#4a3a25" />
-            <circle cx="540" cy="225" r="22" fill="#3f6a4a" />
-            <rect x="537" y="235" width="6" height="28" fill="#4a3a25" />
-          </g>
-
-          {/* 황색 신호등 (yellow kind 전용) */}
-          {scene.showSignal && (
-            <g transform="translate(560, 70)">
-              {/* 지지대 */}
-              <rect x="-1.5" y="78" width="3" height="100" fill="#3a3a3a" />
-              {/* 가로 암 */}
-              <rect x="-50" y="78" width="50" height="3" fill="#3a3a3a" />
-              {/* 신호등 하우징 */}
-              <rect
-                x="-14"
-                y="0"
-                width="28"
-                height="78"
-                rx="4"
-                fill="#1a1a1a"
-                stroke="#444"
-                strokeWidth="1"
-              />
-              {/* 빨강 (꺼짐) */}
-              <circle cx="0" cy="14" r="7.5" fill="#3a1a1a" />
-              {/* 노랑 (켜짐) + glow */}
-              <circle cx="0" cy="39" r="14" fill="url(#yellowGlow)" />
-              <circle cx="0" cy="39" r="7.5" fill="#FFC107" />
-              <circle cx="0" cy="38" r="3" fill="#FFF6C4" />
-              {/* 초록 (꺼짐) */}
-              <circle cx="0" cy="64" r="7.5" fill="#1a3a1a" />
-            </g>
+          {/* ─── 장면별 배경 ─── */}
+          {kind === "yellow-light-approach" ? (
+            <UrbanIntersectionBackdrop />
+          ) : (
+            <BusyCityBackdrop kind={kind} />
           )}
 
           {/* 도로 */}
           <polygon points="0,450 800,450 510,260 290,260" fill="url(#road)" />
 
-          {/* 정지선 (yellow kind 전용) */}
-          {scene.showStopLine && (
-            <g>
-              <polygon
-                points="265,295 535,295 540,303 260,303"
-                fill="white"
-                opacity="0.9"
-              />
-            </g>
-          )}
-
-          {/* 차선 (중앙 점선) */}
-          <g fill="#FFD66B" opacity="0.85">
-            <polygon points="395,265 405,265 408,290 392,290" />
-            <polygon points="389,300 411,300 415,335 385,335" />
-            <polygon points="380,348 420,348 426,395 374,395" />
-            <polygon points="368,410 432,410 442,450 358,450" />
-          </g>
-
           {/* 차로 가장자리 흰선 */}
           <polygon points="0,450 30,450 295,260 290,260" fill="white" opacity="0.45" />
           <polygon points="800,450 770,450 510,260 515,260" fill="white" opacity="0.45" />
 
-          {/* 앞 차량 */}
+          {/* 정지선 + 횡단보도 (yellow 전용) */}
+          {kind === "yellow-light-approach" && <Crosswalk />}
+
+          {/* 측면·전방 보조 차량 (혼잡 도심 분위기) */}
+          {kind === "follow-distance-stop" && <StopSideCars />}
+          {kind === "follow-distance-city" && <CitySideCars />}
+          {kind === "yellow-light-approach" && <YellowSideCars />}
+
+          {/* 메인 앞차 */}
           <g
             style={{
               transition:
@@ -306,7 +244,7 @@ export default function FollowDistancePreview({
           />
         </svg>
 
-        {/* 상단 HUD 라벨 */}
+        {/* 상단 HUD */}
         <div className="pointer-events-none absolute left-3 top-2 flex items-center gap-2 font-accent text-[10px] tracking-wider text-white/85 md:text-xs">
           <span className="rounded bg-black/35 px-2 py-0.5 backdrop-blur-sm">
             {scene.hudPrimary}
@@ -339,7 +277,432 @@ export default function FollowDistancePreview({
   );
 }
 
-/** 운전석 시점에서 본 앞차 뒷모습 */
+/* ───────────────────────── 배경 (도심 정체 / 시내) ───────────────────────── */
+
+function BusyCityBackdrop({ kind }: { kind: InteractiveKind }) {
+  return (
+    <g>
+      {/* 좌측 큰 빌딩 군 */}
+      <g>
+        <rect x="0" y="90" width="115" height="170" fill="#9aa3aa" />
+        <rect x="0" y="90" width="115" height="170" fill="#000" opacity="0.05" />
+        {/* 창문 그리드 (좌측 빌딩) */}
+        {Array.from({ length: 7 }).map((_, r) =>
+          Array.from({ length: 5 }).map((__, c) => (
+            <rect
+              key={`L1-${r}-${c}`}
+              x={10 + c * 20}
+              y={105 + r * 20}
+              width="12"
+              height="12"
+              fill="#d4dde2"
+              opacity="0.7"
+            />
+          ))
+        )}
+        <rect x="115" y="120" width="55" height="140" fill="#b8bfc5" />
+        {Array.from({ length: 6 }).map((_, r) =>
+          Array.from({ length: 2 }).map((__, c) => (
+            <rect
+              key={`L2-${r}-${c}`}
+              x={123 + c * 22}
+              y={130 + r * 18}
+              width="14"
+              height="10"
+              fill="#dfe4e8"
+              opacity="0.7"
+            />
+          ))
+        )}
+        <rect x="170" y="170" width="40" height="90" fill="#a8b0b6" />
+      </g>
+
+      {/* 우측 큰 빌딩 군 */}
+      <g>
+        <rect x="630" y="80" width="170" height="180" fill="#a8b0b6" />
+        {Array.from({ length: 8 }).map((_, r) =>
+          Array.from({ length: 6 }).map((__, c) => (
+            <rect
+              key={`R1-${r}-${c}`}
+              x={645 + c * 24}
+              y={95 + r * 20}
+              width="14"
+              height="13"
+              fill="#cfd6db"
+              opacity="0.75"
+            />
+          ))
+        )}
+        <rect x="585" y="135" width="50" height="125" fill="#b5bcc1" />
+        {Array.from({ length: 5 }).map((_, r) => (
+          <rect
+            key={`R2-${r}`}
+            x={595}
+            y={148 + r * 20}
+            width="32"
+            height="10"
+            fill="#e0e5e9"
+            opacity="0.7"
+          />
+        ))}
+      </g>
+
+      {/* 가로수 */}
+      <g opacity="0.8">
+        <circle cx="240" cy="225" r="22" fill="#3f6a4a" />
+        <rect x="237" y="235" width="6" height="28" fill="#4a3a25" />
+        <circle cx="560" cy="225" r="24" fill="#3f6a4a" />
+        <rect x="557" y="235" width="6" height="28" fill="#4a3a25" />
+      </g>
+
+      {/* 가로등 */}
+      <g fill="#4a4a4a" opacity="0.7">
+        <rect x="218" y="170" width="3" height="60" />
+        <rect x="218" y="167" width="20" height="3" />
+        <rect x="579" y="170" width="3" height="60" />
+        <rect x="561" y="167" width="20" height="3" />
+      </g>
+
+      {/* 시내일 때 추가 원경 차 흐름 */}
+      {kind === "follow-distance-city" && (
+        <g opacity="0.85">
+          {/* 멀리 있는 차들 — 본인 차로 앞쪽 */}
+          <MiniCar cx={400} cy={278} scale={0.18} color="#e3e6ea" />
+          <MiniCar cx={385} cy={272} scale={0.13} color="#5c6266" />
+          <MiniCar cx={415} cy={272} scale={0.12} color="#6f4030" />
+        </g>
+      )}
+    </g>
+  );
+}
+
+/* ───────────────────── 도심 교차로 (Q10) 배경 ───────────────────── */
+
+function UrbanIntersectionBackdrop() {
+  return (
+    <g>
+      {/* 좌측 빌딩 (사진 좌측의 흰색·베이지 빌딩 느낌) */}
+      <g>
+        <rect x="0" y="60" width="135" height="200" fill="#bcc3c8" />
+        {Array.from({ length: 9 }).map((_, r) =>
+          Array.from({ length: 5 }).map((__, c) => (
+            <rect
+              key={`YL-${r}-${c}`}
+              x={10 + c * 24}
+              y={75 + r * 20}
+              width="16"
+              height="13"
+              fill="#dde3e7"
+              opacity="0.85"
+            />
+          ))
+        )}
+        {/* 간판 */}
+        <rect x="20" y="245" width="80" height="14" fill="#2d6cb0" opacity="0.8" />
+        <rect x="105" y="245" width="25" height="14" fill="#c93030" opacity="0.8" />
+      </g>
+
+      {/* 우측 빌딩 (사진 우측의 큰 회색 사옥 느낌) */}
+      <g>
+        <rect x="640" y="40" width="160" height="220" fill="#9ca3a8" />
+        {Array.from({ length: 11 }).map((_, r) =>
+          Array.from({ length: 5 }).map((__, c) => (
+            <rect
+              key={`YR-${r}-${c}`}
+              x={655 + c * 28}
+              y={55 + r * 19}
+              width="20"
+              height="12"
+              fill="#c4ccd1"
+              opacity="0.85"
+            />
+          ))
+        )}
+        {/* 회사 로고 자리 */}
+        <rect x="660" y="245" width="120" height="16" fill="#3a4248" opacity="0.7" />
+      </g>
+
+      {/* 중앙 원경 빌딩 */}
+      <g opacity="0.6">
+        <rect x="320" y="180" width="40" height="80" fill="#b7bdc2" />
+        <rect x="365" y="195" width="35" height="65" fill="#aab0b5" />
+        <rect x="405" y="170" width="50" height="90" fill="#b7bdc2" />
+        <rect x="460" y="195" width="40" height="65" fill="#a4aaaf" />
+      </g>
+
+      {/* 가로수 */}
+      <g opacity="0.85">
+        <circle cx="200" cy="225" r="18" fill="#3f6a4a" />
+        <rect x="198" y="235" width="5" height="25" fill="#4a3a25" />
+        <circle cx="610" cy="220" r="22" fill="#3f6a4a" />
+        <rect x="608" y="232" width="5" height="28" fill="#4a3a25" />
+      </g>
+
+      {/* 가로등 (사진 오른쪽 큰 가로등) */}
+      <g fill="#5a5a5a">
+        <rect x="690" y="100" width="3" height="160" />
+        <path d="M 693 110 Q 720 95, 745 100" stroke="#5a5a5a" strokeWidth="3" fill="none" />
+        <rect x="744" y="98" width="14" height="5" rx="2" />
+      </g>
+
+      {/* 신호등 가로 게이트(gantry) — 사진처럼 도로를 가로지르는 가로 암 */}
+      {/* 좌측 지지대 */}
+      <rect x="115" y="100" width="6" height="160" fill="#5a5a5a" />
+      {/* 우측 지지대 */}
+      <rect x="640" y="80" width="6" height="180" fill="#5a5a5a" />
+      {/* 가로 암 */}
+      <rect x="115" y="115" width="525" height="5" fill="#6a6a6a" />
+      <rect x="115" y="113" width="525" height="2" fill="#8a8a8a" opacity="0.7" />
+
+      {/* 신호등 4개 — 모두 황색 점등 */}
+      <g>
+        <SignalHead x={185} y={120} />
+        <SignalHead x={325} y={120} />
+        <SignalHead x={470} y={120} />
+        <SignalHead x={580} y={120} />
+      </g>
+
+      {/* 표지판: U-턴 (좌측) */}
+      <g transform="translate(165, 180)">
+        <circle cx="0" cy="0" r="16" fill="#2d6cb0" />
+        <path
+          d="M -7 5 Q -7 -7, 2 -7 Q 9 -7, 9 0 L 9 4"
+          stroke="white"
+          strokeWidth="2.5"
+          fill="none"
+        />
+        <polygon points="6,4 12,4 9,9" fill="white" />
+      </g>
+      {/* 직진+좌회전 표지 */}
+      <g transform="translate(202, 180)">
+        <circle cx="0" cy="0" r="16" fill="#2d6cb0" />
+        <path d="M 0 8 L 0 -7" stroke="white" strokeWidth="2.5" />
+        <polygon points="-3,-5 0,-10 3,-5" fill="white" />
+        <path d="M -2 -3 L -8 -3" stroke="white" strokeWidth="2.5" />
+        <polygon points="-7,-6 -11,-3 -7,0" fill="white" />
+      </g>
+
+      {/* 속도제한 50 (가로 암 우측) */}
+      <g transform="translate(540, 140)">
+        <circle cx="0" cy="0" r="20" fill="white" stroke="#c93030" strokeWidth="5" />
+        <text
+          x="0"
+          y="6"
+          textAnchor="middle"
+          fontSize="18"
+          fontWeight="800"
+          fill="#222"
+          fontFamily="Arial, sans-serif"
+        >
+          50
+        </text>
+      </g>
+
+      {/* 속도제한 30 (우측 가로등 아래) */}
+      <g transform="translate(665, 200)">
+        <circle cx="0" cy="0" r="16" fill="white" stroke="#c93030" strokeWidth="4" />
+        <text
+          x="0"
+          y="5"
+          textAnchor="middle"
+          fontSize="14"
+          fontWeight="800"
+          fill="#222"
+          fontFamily="Arial, sans-serif"
+        >
+          30
+        </text>
+      </g>
+
+      {/* 도로명 표지판 (우측 파란 표지) */}
+      <g transform="translate(610, 175)">
+        <rect width="55" height="20" fill="#2d6cb0" rx="2" />
+        <text
+          x="27.5"
+          y="13"
+          textAnchor="middle"
+          fontSize="9"
+          fill="white"
+          fontFamily="Arial, sans-serif"
+        >
+          공항대로
+        </text>
+      </g>
+    </g>
+  );
+}
+
+/** 신호등 하우징 (가로형, 황색 점등) */
+function SignalHead({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x}, ${y})`}>
+      {/* 짧은 지지 */}
+      <rect x="-2" y="-3" width="4" height="6" fill="#5a5a5a" />
+      {/* 하우징 (가로형) */}
+      <rect
+        x="-30"
+        y="3"
+        width="60"
+        height="22"
+        rx="3"
+        fill="#1a1a1a"
+        stroke="#444"
+        strokeWidth="1"
+      />
+      {/* 빨강 (꺼짐) */}
+      <circle cx="-19" cy="14" r="6.5" fill="#3a1a1a" />
+      {/* 황색 (켜짐) + glow */}
+      <circle cx="0" cy="14" r="11" fill="url(#yellowGlow)" />
+      <circle cx="0" cy="14" r="6.5" fill="#FFC107" />
+      <circle cx="0" cy="13" r="2.5" fill="#FFF6C4" />
+      {/* 좌회전 화살표 (꺼짐) */}
+      <circle cx="19" cy="14" r="6.5" fill="#1a3a1a" />
+    </g>
+  );
+}
+
+/** 정지선 + 횡단보도 */
+function Crosswalk() {
+  return (
+    <g>
+      {/* 정지선 (도로폭 사다리꼴) */}
+      <polygon
+        points="290,290 510,290 515,298 285,298"
+        fill="white"
+        opacity="0.95"
+      />
+      {/* 횡단보도 — 정지선 바로 앞 zebra (원근 적용) */}
+      <g opacity="0.88">
+        {[0, 1, 2, 3, 4, 5, 6].map((i) => {
+          const t = i / 7;
+          // 위쪽 폭 좁고 아래쪽 폭 넓게 (원근)
+          const yTop = 305 + t * 20;
+          const yBot = 311 + t * 24;
+          const xL = 285 - t * 18;
+          const xR = 515 + t * 18;
+          const w = (xR - xL) / 14;
+          const stripes = [];
+          for (let s = 0; s < 7; s++) {
+            const x1 = xL + (xR - xL) * (s / 7);
+            const x2 = x1 + w;
+            stripes.push(
+              <polygon
+                key={`cw-${i}-${s}`}
+                points={`${x1},${yTop} ${x2},${yTop} ${x2 + 1},${yBot} ${x1 + 1},${yBot}`}
+                fill="white"
+              />
+            );
+          }
+          return <g key={`cw-row-${i}`}>{stripes}</g>;
+        })}
+      </g>
+    </g>
+  );
+}
+
+/* ───────────────────── 측면 보조 차량 ───────────────────── */
+
+function StopSideCars() {
+  // 정지 상태 — 좌·우 차로에 멈춰있는 차들
+  return (
+    <g>
+      {/* 좌측 차로 (가까이) */}
+      <MiniCar cx={150} cy={360} scale={0.9} color="#a3acb3" plate />
+      {/* 우측 차로 (가까이) */}
+      <MiniCar cx={650} cy={360} scale={0.9} color="#7a3838" plate />
+      {/* 좌측 더 멀리 */}
+      <MiniCar cx={205} cy={300} scale={0.45} color="#3a4248" />
+      {/* 우측 더 멀리 */}
+      <MiniCar cx={595} cy={300} scale={0.45} color="#d6dadd" />
+      {/* 더 원경 */}
+      <MiniCar cx={360} cy={273} scale={0.18} color="#5b6066" />
+      <MiniCar cx={440} cy={273} scale={0.18} color="#a8aeb3" />
+    </g>
+  );
+}
+
+function CitySideCars() {
+  // 시내 주행 — 좌우 차로 차들이 옆에서 같이 가는 분위기
+  return (
+    <g>
+      <MiniCar cx={130} cy={355} scale={0.85} color="#5b6671" plate />
+      <MiniCar cx={670} cy={355} scale={0.85} color="#9aa3aa" plate />
+      <MiniCar cx={195} cy={295} scale={0.4} color="#3a4248" />
+      <MiniCar cx={605} cy={295} scale={0.4} color="#7a3838" />
+      {/* 마주 오는 차로 (반대편) — 더 멀리 */}
+      <g opacity="0.85">
+        <MiniCar cx={310} cy={272} scale={0.16} color="#cfd2d6" />
+        <MiniCar cx={500} cy={272} scale={0.16} color="#3f4750" />
+      </g>
+    </g>
+  );
+}
+
+function YellowSideCars() {
+  // 교차로 황색 신호 — 횡단보도 너머 멀리 차 한 대 정도, 좌측 차로에 옆 차
+  return (
+    <g>
+      {/* 옆 차로 — 같이 정지하려는 차 */}
+      <MiniCar cx={145} cy={355} scale={0.78} color="#8a929a" plate />
+      <MiniCar cx={655} cy={355} scale={0.65} color="#3a3f48" />
+    </g>
+  );
+}
+
+/** 작은 차 (뒷모습 단순화) */
+function MiniCar({
+  cx,
+  cy,
+  scale = 1,
+  color = "#4a5160",
+  plate = false,
+}: {
+  cx: number;
+  cy: number;
+  scale?: number;
+  color?: string;
+  plate?: boolean;
+}) {
+  return (
+    <g transform={`translate(${cx}, ${cy}) scale(${scale})`}>
+      <ellipse cx="0" cy="40" rx="55" ry="5" fill="black" opacity="0.4" />
+      {/* 차체 */}
+      <path
+        d="M -45 25 Q -45 -10, -25 -18 L 25 -18 Q 45 -10, 45 25 L 45 38 Q 45 44, 38 44 L -38 44 Q -45 44, -45 38 Z"
+        fill={color}
+      />
+      {/* 루프 + 뒷유리 */}
+      <path
+        d="M -28 -15 Q -22 -32, -8 -36 L 8 -36 Q 22 -32, 28 -15 Z"
+        fill="#1a2330"
+      />
+      <path
+        d="M -22 -16 Q -17 -27, -6 -30 L 6 -30 Q 17 -27, 22 -16 Z"
+        fill="#3d6480"
+        opacity="0.85"
+      />
+      {/* 후미등 */}
+      <rect x="-40" y="3" width="20" height="5" rx="1.5" fill="#ff3b3b" />
+      <rect x="20" y="3" width="20" height="5" rx="1.5" fill="#ff3b3b" />
+      {/* 번호판 */}
+      {plate && (
+        <rect
+          x="-14"
+          y="22"
+          width="28"
+          height="10"
+          rx="1.5"
+          fill="#f3efe0"
+          stroke="#444"
+          strokeWidth="0.5"
+        />
+      )}
+    </g>
+  );
+}
+
+/* ───────────────────── 메인 앞차 (옵션 연동) ───────────────────── */
+
 function CarBack({
   showPlate,
   showWheels,
